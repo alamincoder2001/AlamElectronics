@@ -55,7 +55,7 @@
                         <div class="row">
                             <div class="col-md-7">
                                 <div class="form-group">
-                                    <label class="control-label col-md-4">Transfer date</label>
+                                    <label class="control-label col-md-4 no-padding-right">Transfer date</label>
                                     <div class="col-md-8">
                                         <input type="date" class="form-control" v-model="transfer.transfer_date">
                                     </div>
@@ -190,7 +190,7 @@
 
     <div class="row" style="display:none" v-bind:style="{display:cart.length > 0 ? '' : 'none'}">
         <div class="col-md-12">
-            <button class="btn btn-success pull-right" v-on:click="saveProductTransfer">Save</button>
+            <button class="btn btn-success pull-right" v-on:click="saveProductTransfer" :disabled="inProgress ? true: false">Save</button>
         </div>
     </div>
 </div>
@@ -229,6 +229,7 @@
 				serial: null,
                 psId: null,
 				psSerialNumber: '',
+                inProgress: false,
             }
         },
         async created() {
@@ -438,6 +439,7 @@
                 if(this.transfer.transfer_id != 0) {
                     url = '/update_product_transfer';
                 }
+                this.inProgress = true;
                 axios.post(url, data).then(res => {
                      let r = res.data;
                      alert(r.message);

@@ -51,7 +51,7 @@
 
 			<div class="form-group">
 				<label class="col-sm-2 control-label no-padding-right">
-					<input type="checkbox"  v-model="installment" style="margin-left: 15px;"> Is Installment
+					<input type="checkbox" v-model="installment" true-value="1" false-value="0" style="margin-left: 15px;"> Is Installment
 				</label>
 			</div>
 

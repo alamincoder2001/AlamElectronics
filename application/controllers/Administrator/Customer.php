@@ -20,7 +20,7 @@ class Customer extends CI_Controller
     public function index()
     {
         $access = $this->mt->userAccess();
-        if(!$access){
+        if (!$access) {
             redirect(base_url());
         }
         $data['title'] = "Customer";
@@ -32,7 +32,7 @@ class Customer extends CI_Controller
     public function customerlist()
     {
         $access = $this->mt->userAccess();
-        if(!$access){
+        if (!$access) {
             redirect(base_url());
         }
         $data['title'] = "Customer List";
@@ -40,11 +40,12 @@ class Customer extends CI_Controller
         $this->load->view("Administrator/index", $data);
     }
 
-    public function getCustomers(){
+    public function getCustomers()
+    {
         $data = json_decode($this->input->raw_input_stream);
 
         $customerTypeClause = "";
-        if(isset($data->customerType) && $data->customerType != null){
+        if (isset($data->customerType) && $data->customerType != null) {
             $customerTypeClause = " and Customer_Type = '$data->customerType'";
         }
         $customers = $this->db->query("
@@ -63,18 +64,19 @@ class Customer extends CI_Controller
         echo json_encode($customers);
     }
 
-    public function getCustomerDue(){
+    public function getCustomerDue()
+    {
         $data = json_decode($this->input->raw_input_stream);
-        
+
         $clauses = "";
-        if(isset($data->customerId) && $data->customerId != null){
+        if (isset($data->customerId) && $data->customerId != null) {
             $clauses .= " and c.Customer_SlNo = '$data->customerId'";
         }
-        if(isset($data->districtId) && $data->districtId != null){
+        if (isset($data->districtId) && $data->districtId != null) {
             $clauses .= " and c.area_ID = '$data->districtId'";
         }
-        
-        if(isset($data->customer_type) && $data->customer_type != null){
+
+        if (isset($data->customer_type) && $data->customer_type != null) {
             $clauses .= " and c.Customer_Type = '$data->customer_type'";
         }
 
@@ -83,25 +85,26 @@ class Customer extends CI_Controller
         echo json_encode($dueResult);
     }
 
-    public function getCustomerPayments(){
+    public function getCustomerPayments()
+    {
         $data = json_decode($this->input->raw_input_stream);
 
         $clauses = "";
-        if(isset($data->paymentType) && $data->paymentType != '' && $data->paymentType == 'received'){
+        if (isset($data->paymentType) && $data->paymentType != '' && $data->paymentType == 'received') {
             $clauses .= " and cp.CPayment_TransactionType = 'CR'";
         }
-        if(isset($data->paymentType) && $data->paymentType != '' && $data->paymentType == 'paid'){
+        if (isset($data->paymentType) && $data->paymentType != '' && $data->paymentType == 'paid') {
             $clauses .= " and cp.CPayment_TransactionType = 'CP'";
         }
 
-        if(isset($data->dateFrom) && $data->dateFrom != '' && isset($data->dateTo) && $data->dateTo != ''){
+        if (isset($data->dateFrom) && $data->dateFrom != '' && isset($data->dateTo) && $data->dateTo != '') {
             $clauses .= " and cp.CPayment_date between '$data->dateFrom' and '$data->dateTo'";
         }
 
-        if(isset($data->customerId) && $data->customerId != '' && $data->customerId != null){
+        if (isset($data->customerId) && $data->customerId != '' && $data->customerId != null) {
             $clauses .= " and cp.CPayment_customerID = '$data->customerId'";
         }
-        if(isset($data->discount)){
+        if (isset($data->discount)) {
             $clauses .= " and cp.discount != 0";
         }
 
@@ -138,7 +141,8 @@ class Customer extends CI_Controller
         echo json_encode($payments);
     }
 
-    public function getCustomerInstallmentDue() {
+    public function getCustomerInstallmentDue()
+    {
         $data = json_decode($this->input->raw_input_stream);
         $branchId =  $this->session->userdata('BRANCHid');
         $installments = $this->db->query("
@@ -170,7 +174,28 @@ class Customer extends CI_Controller
         echo json_encode($installments);
     }
 
-    public function updateInstallmentPayment() {
+    public function getCustomerInstallmentPaymentCheck()
+    {
+        $res = new stdClass;
+
+        try {
+            $data = json_decode($this->input->raw_input_stream);
+            $check = $this->db->query("SELECT cp.* FROM tbl_customer_payment cp WHERE cp.CPayment_status = 'a' AND cp.CPayment_customerID = ? AND cp.sale_id = ?", [$data->customerId, $data->saleId]);
+            if ($check->num_rows() > 0) {
+                $res->status = true;
+            } else {
+                $res->status = false;
+            }
+        } catch (\Throwable $e) {
+            $res->status = false;
+            $res->message = "Failed " . $e->getMessage();
+        }
+
+        echo json_encode($res);
+    }
+
+    public function updateInstallmentPayment()
+    {
         $res = new stdClass;
         try {
             $data = json_decode($this->input->raw_input_stream);
@@ -189,10 +214,10 @@ class Customer extends CI_Controller
                     ")->row_array();
 
                 if ($payment) {
-                    if ( $payment['child'] > 0 || ($data->paid + $data->discount) < $payment['CPayment_amount']) {
+                    if ($payment['child'] > 0 || ($data->paid + $data->discount) < $payment['CPayment_amount']) {
 
                         $newPayment = (array)$data;
-                        unset($newPayment['CPayment_id'], $newPayment['Customer_Name'], $newPayment['Customer_Mobile'], $newPayment['Customer_Address'], $newPayment['previous_paid'], $newPayment['due'], $newPayment['paid'],$newPayment['display_text']);
+                        unset($newPayment['CPayment_id'], $newPayment['Customer_Name'], $newPayment['Customer_Mobile'], $newPayment['Customer_Address'], $newPayment['previous_paid'], $newPayment['due'], $newPayment['paid'], $newPayment['display_text']);
                         $newPayment['CPayment_amount'] = $data->paid;
                         $newPayment['discount'] = $data->discount;
                         $newPayment['CPayment_invoice'] = $this->mt->generateCustomerPaymentCode();
@@ -203,21 +228,20 @@ class Customer extends CI_Controller
                         $newPayment['parent_id'] = $payment['CPayment_id'];
                         $this->db->insert('tbl_customer_payment', $newPayment);
                         $collectionId = $this->db->insert_id();
-
-                    }else{
+                    } else {
                         $collection = array(
                             'CPayment_Paymentby'    => $data->CPayment_Paymentby,
                             'CPayment_amount'       => $data->paid,
                             'discount'              => $data->discount,
-                            'CPayment_date'         => $data->CPayment_date, 
-                            'CPayment_notes'        => $data->CPayment_notes, 
-                            'account_id'            => $data->account_id, 
-                            'CPayment_previous_due' => $data->CPayment_previous_due, 
+                            'CPayment_date'         => $data->CPayment_date,
+                            'CPayment_notes'        => $data->CPayment_notes,
+                            'account_id'            => $data->account_id,
+                            'CPayment_previous_due' => $data->CPayment_previous_due,
                             'CPayment_status'       => 'a',
-                            'update_by'             => $this->session->userdata("FullName"), 
-                            'CPayment_UpdateDAte'   => date('Y-m-d H:i:s') 
+                            'update_by'             => $this->session->userdata("FullName"),
+                            'CPayment_UpdateDAte'   => date('Y-m-d H:i:s')
                         );
-                        
+
                         $this->db->where('CPayment_id', $data->CPayment_id)->update('tbl_customer_payment', $collection);
                         $collectionId = $data->CPayment_id;
                     }
@@ -225,33 +249,33 @@ class Customer extends CI_Controller
                     $res->message = "Installment payment successfully";
                     $res->success = true;
                     $res->collectionId = $collectionId;
-                }else{
+                } else {
                     throw new Exception("Invalid Request");
                 }
-
-            }else{
+            } else {
                 throw new Exception("Invalid Payment");
             }
-            
         } catch (\Exception $e) {
-            $res->message = "Failed ". $e->getMessage();
+            $res->message = "Failed " . $e->getMessage();
         }
         echo json_encode($res);
     }
 
-    public function installmentCollectionPrint($collectionId){
+    public function installmentCollectionPrint($collectionId)
+    {
         $data['title'] = "Collection Invoice";
         $data['collectionId'] = $collectionId;
         $data['content'] = $this->load->view('Administrator/sales/collectionReport', $data, TRUE);
         $this->load->view('Administrator/index', $data);
     }
-    public function getCollection(){
+    public function getCollection()
+    {
         $data = json_decode($this->input->raw_input_stream);
 
         $installment = $this->db->query("SELECT *
             FROM `tbl_customer_payment`
             WHERE `CPayment_id` = ?", $data->collectionId)->row();
-        
+
 
         $TotalTaka = $this->db->query("SELECT `SaleMaster_DueAmount`
             FROM `tbl_salesmaster`
@@ -264,19 +288,35 @@ class Customer extends CI_Controller
         $customer = $this->db->query("SELECT * 
             FROM `tbl_customer` 
             WHERE `Customer_SlNo` = ?", $installment->CPayment_customerID)->row();
-        
-        $res = array();
-        $res['installment'] = $installment;
-        $res['TotalTaka'] = $TotalTaka;
-        $res['Totalpaid'] = $paid;
-        $res['customer'] = $customer;   
 
-        echo json_encode($res);        
+        $saleDetails = $this->db->query("SELECT
+                                sd.*,
+                                p.Product_Code,
+                                p.Product_Name,
+                                sn.ps_serial_number,
+                                sm.SaleMaster_SaleDate,
+                                sm.SaleMaster_TotalSaleAmount
+                            FROM tbl_saledetails sd
+                            LEFT JOIN tbl_salesmaster sm ON sm.SaleMaster_SlNo = sd.SaleMaster_IDNo
+                            LEFT JOIN tbl_product p ON p.Product_SlNo = sd.Product_IDNo
+                            LEFT JOIN tbl_product_serial_numbers sn ON sn.sales_details_id = sd.SaleDetails_SlNo
+                            WHERE sd.Status = 'a'
+                            AND sd.SaleMaster_IDNo = ?", $installment->sale_id)->result();
+
+        $res                = array();
+        $res['installment'] = $installment;
+        $res['TotalTaka']   = $TotalTaka;
+        $res['Totalpaid']   = $paid;
+        $res['customer']    = $customer;
+        $res['saleDetails'] = $saleDetails;
+
+        echo json_encode($res);
     }
 
-    public function addCustomerPayment(){
-        $res = ['success'=>false, 'message'=>''];
-        try{
+    public function addCustomerPayment()
+    {
+        $res = ['success' => false, 'message' => ''];
+        try {
             $paymentObj = json_decode($this->input->raw_input_stream);
 
             $payment = (array)$paymentObj;
@@ -288,9 +328,9 @@ class Customer extends CI_Controller
 
             $this->db->insert('tbl_customer_payment', $payment);
             $paymentId = $this->db->insert_id();
-           
 
-            if($paymentObj->CPayment_TransactionType == 'CR') {
+
+            if ($paymentObj->CPayment_TransactionType == 'CR') {
                 $currentDue = $paymentObj->CPayment_TransactionType == 'CR' ? $paymentObj->CPayment_previous_due - $paymentObj->CPayment_amount : $paymentObj->CPayment_previous_due + $paymentObj->CPayment_amount;
                 //Send sms
                 $customerInfo = $this->db->query("select * from tbl_customer where Customer_SlNo = ?", $paymentObj->CPayment_customerID)->row();
@@ -302,45 +342,47 @@ class Customer extends CI_Controller
                 $this->sms->sendSms($recipient, $message);
             }
 
-            $res = ['success'=>true, 'message'=>'Payment added successfully', 'paymentId'=>$paymentId];
-        } catch (Exception $ex){
-            $res = ['success'=>false, 'message'=>$ex->getMessage()];
+            $res = ['success' => true, 'message' => 'Payment added successfully', 'paymentId' => $paymentId];
+        } catch (Exception $ex) {
+            $res = ['success' => false, 'message' => $ex->getMessage()];
         }
 
         echo json_encode($res);
     }
 
-    public function updateCustomerPayment(){
-        $res = ['success'=>false, 'message'=>''];
-        try{
+    public function updateCustomerPayment()
+    {
+        $res = ['success' => false, 'message' => ''];
+        try {
             $paymentObj = json_decode($this->input->raw_input_stream);
             $paymentId = $paymentObj->CPayment_id;
-    
+
             $payment = (array)$paymentObj;
             unset($payment['CPayment_id']);
             $payment['update_by'] = $this->session->userdata("FullName");
             $payment['CPayment_UpdateDAte'] = date('Y-m-d H:i:s');
 
             $this->db->where('CPayment_id', $paymentObj->CPayment_id)->update('tbl_customer_payment', $payment);
-            
-            $res = ['success'=>true, 'message'=>'Payment updated successfully', 'paymentId'=>$paymentId];
-        } catch (Exception $ex){
-            $res = ['success'=>false, 'message'=>$ex->getMessage()];
+
+            $res = ['success' => true, 'message' => 'Payment updated successfully', 'paymentId' => $paymentId];
+        } catch (Exception $ex) {
+            $res = ['success' => false, 'message' => $ex->getMessage()];
         }
 
         echo json_encode($res);
     }
 
-    public function deleteCustomerPayment(){
-        $res = ['success'=>false, 'message'=>''];
-        try{
+    public function deleteCustomerPayment()
+    {
+        $res = ['success' => false, 'message' => ''];
+        try {
             $data = json_decode($this->input->raw_input_stream);
-    
-            $this->db->set(['CPayment_status'=>'d'])->where('CPayment_id', $data->paymentId)->update('tbl_customer_payment');
-            
-            $res = ['success'=>true, 'message'=>'Payment deleted successfully'];
-        } catch (Exception $ex){
-            $res = ['success'=>false, 'message'=>$ex->getMessage()];
+
+            $this->db->set(['CPayment_status' => 'd'])->where('CPayment_id', $data->paymentId)->update('tbl_customer_payment');
+
+            $res = ['success' => true, 'message' => 'Payment deleted successfully'];
+        } catch (Exception $ex) {
+            $res = ['success' => false, 'message' => $ex->getMessage()];
         }
 
         echo json_encode($res);
@@ -348,12 +390,12 @@ class Customer extends CI_Controller
 
     public function addCustomer()
     {
-        $res = ['success'=>false, 'message'=>''];
-        try{
+        $res = ['success' => false, 'message' => ''];
+        try {
             $customerObj = json_decode($this->input->post('data'));
-            
+
             $customerCodeCount = $this->db->query("select * from tbl_customer where Customer_Code = ?", $customerObj->Customer_Code)->num_rows();
-            if($customerCodeCount > 0){
+            if ($customerCodeCount > 0) {
                 $customerObj->Customer_Code = $this->mt->generateCustomerCode();
             }
 
@@ -366,7 +408,7 @@ class Customer extends CI_Controller
 
             $duplicateMobileQuery = $this->db->query("select * from tbl_customer where Customer_Mobile = ? and Customer_brunchid = ?", [$customerObj->Customer_Mobile, $this->session->userdata("BRANCHid")]);
 
-            if($duplicateMobileQuery->num_rows() > 0) {
+            if ($duplicateMobileQuery->num_rows() > 0) {
                 $duplicateCustomer = $duplicateMobileQuery->row();
 
                 unset($customer['Customer_Code']);
@@ -374,22 +416,22 @@ class Customer extends CI_Controller
                 $customer["UpdateTime"] = date("Y-m-d H:i:s");
                 $customer["status"]     = 'a';
                 $this->db->where('Customer_SlNo', $duplicateCustomer->Customer_SlNo)->update('tbl_customer', $customer);
-                
+
                 $customerId = $duplicateCustomer->Customer_SlNo;
                 $customerObj->Customer_Code = $duplicateCustomer->Customer_Code;
                 $res_message = 'Customer updated successfully';
             } else {
                 $customer["AddBy"] = $this->session->userdata("FullName");
                 $customer["AddTime"] = date("Y-m-d H:i:s");
-    
+
                 $this->db->insert('tbl_customer', $customer);
                 $customerId = $this->db->insert_id();
 
                 $res_message = 'Customer added successfully';
             }
-            
 
-            if(!empty($_FILES)) {
+
+            if (!empty($_FILES)) {
                 $config['upload_path'] = './uploads/customers/';
                 $config['allowed_types'] = 'gif|jpg|png';
 
@@ -400,13 +442,13 @@ class Customer extends CI_Controller
                 //$imageName = $this->upload->data('file_ext'); /*for geting uploaded image name*/
 
                 $config['image_library'] = 'gd2';
-                $config['source_image'] = './uploads/customers/'. $imageName ; 
+                $config['source_image'] = './uploads/customers/' . $imageName;
                 $config['new_image'] = './uploads/customers/';
                 $config['maintain_ratio'] = TRUE;
                 $config['width']    = 640;
                 $config['height']   = 480;
 
-                $this->load->library('image_lib', $config); 
+                $this->load->library('image_lib', $config);
                 $this->image_lib->resize();
 
                 $imageName = $customerObj->Customer_Code . $this->upload->data('file_ext');
@@ -414,9 +456,9 @@ class Customer extends CI_Controller
                 $this->db->query("update tbl_customer set image_name = ? where Customer_SlNo = ?", [$imageName, $customerId]);
             }
 
-            $res = ['success'=>true, 'message' => $res_message, 'customerCode'=>$this->mt->generateCustomerCode()];
-        } catch (Exception $ex){
-            $res = ['success'=>false, 'message'=>$ex->getMessage()];
+            $res = ['success' => true, 'message' => $res_message, 'customerCode' => $this->mt->generateCustomerCode()];
+        } catch (Exception $ex) {
+            $res = ['success' => false, 'message' => $ex->getMessage()];
         }
 
         echo json_encode($res);
@@ -424,14 +466,14 @@ class Customer extends CI_Controller
 
     public function updateCustomer()
     {
-        $res = ['success'=>false, 'message'=>''];
-        try{
+        $res = ['success' => false, 'message' => ''];
+        try {
             $customerObj = json_decode($this->input->post('data'));
-            
+
             $customerMobileCount = $this->db->query("select * from tbl_customer where Customer_Mobile = ? and Customer_SlNo != ? and Customer_brunchid = ?", [$customerObj->Customer_Mobile, $customerObj->Customer_SlNo, $this->session->userdata("BRANCHid")])->num_rows();
 
-            if($customerMobileCount > 0){
-                $res = ['success'=>false, 'message'=>'Mobile number already exists'];
+            if ($customerMobileCount > 0) {
+                $res = ['success' => false, 'message' => 'Mobile number already exists'];
                 echo Json_encode($res);
                 exit;
             }
@@ -445,7 +487,7 @@ class Customer extends CI_Controller
 
             $this->db->where('Customer_SlNo', $customerId)->update('tbl_customer', $customer);
 
-            if(!empty($_FILES)) {
+            if (!empty($_FILES)) {
                 $config['upload_path'] = './uploads/customers/';
                 $config['allowed_types'] = 'gif|jpg|png';
 
@@ -456,13 +498,13 @@ class Customer extends CI_Controller
                 //$imageName = $this->upload->data('file_ext'); /*for geting uploaded image name*/
 
                 $config['image_library'] = 'gd2';
-                $config['source_image'] = './uploads/customers/'. $imageName ; 
+                $config['source_image'] = './uploads/customers/' . $imageName;
                 $config['new_image'] = './uploads/customers/';
                 $config['maintain_ratio'] = TRUE;
                 $config['width']    = 640;
                 $config['height']   = 480;
 
-                $this->load->library('image_lib', $config); 
+                $this->load->library('image_lib', $config);
                 $this->image_lib->resize();
 
                 $imageName = $customerObj->Customer_Code . $this->upload->data('file_ext');
@@ -470,9 +512,9 @@ class Customer extends CI_Controller
                 $this->db->query("update tbl_customer set image_name = ? where Customer_SlNo = ?", [$imageName, $customerId]);
             }
 
-            $res = ['success'=>true, 'message'=>'Customer updated successfully', 'customerCode'=>$this->mt->generateCustomerCode()];
-        } catch (Exception $ex){
-            $res = ['success'=>false, 'message'=>$ex->getMessage()];
+            $res = ['success' => true, 'message' => 'Customer updated successfully', 'customerCode' => $this->mt->generateCustomerCode()];
+        } catch (Exception $ex) {
+            $res = ['success' => false, 'message' => $ex->getMessage()];
         }
 
         echo json_encode($res);
@@ -488,15 +530,15 @@ class Customer extends CI_Controller
 
     public function deleteCustomer()
     {
-        $res = ['success'=>false, 'message'=>''];
-        try{
+        $res = ['success' => false, 'message' => ''];
+        try {
             $data = json_decode($this->input->raw_input_stream);
 
             $this->db->query("update tbl_customer set status = 'd' where Customer_SlNo = ?", $data->customerId);
 
-            $res = ['success'=>true, 'message'=>'Customer deleted'];
-        } catch (Exception $ex){
-            $res = ['success'=>false, 'message'=>$ex->getMessage()];
+            $res = ['success' => true, 'message' => 'Customer deleted'];
+        } catch (Exception $ex) {
+            $res = ['success' => false, 'message' => $ex->getMessage()];
         }
 
         echo json_encode($res);
@@ -505,7 +547,7 @@ class Customer extends CI_Controller
     function customer_due()
     {
         $access = $this->mt->userAccess();
-        if(!$access){
+        if (!$access) {
             redirect(base_url());
         }
         $data['title'] = 'Customer Due';
@@ -552,7 +594,7 @@ class Customer extends CI_Controller
     public function customerPaymentPage()
     {
         $access = $this->mt->userAccess();
-        if(!$access){
+        if (!$access) {
             redirect(base_url());
         }
         $data['title'] = "Customer Payment";
@@ -581,7 +623,7 @@ class Customer extends CI_Controller
 
     function fatch_customer_name($Custid = null)
     {
-        $customer = $this->db->where('Customer_SlNo',$Custid)->get('tbl_customer')->row();
+        $customer = $this->db->where('Customer_SlNo', $Custid)->get('tbl_customer')->row();
 
         $data = array(
             'cus_name'      => $customer->Customer_Name,
@@ -688,7 +730,7 @@ class Customer extends CI_Controller
     function customer_payment_report()
     {
         $access = $this->mt->userAccess();
-        if(!$access){
+        if (!$access) {
             redirect(base_url());
         }
         $data['title'] = "Customer Payment Reports";
@@ -698,10 +740,11 @@ class Customer extends CI_Controller
         $this->load->view('Administrator/index', $data);
     }
 
-    function getCustomerLedger(){
+    function getCustomerLedger()
+    {
         $data = json_decode($this->input->raw_input_stream);
         $previousDueQuery = $this->db->query("select ifnull(previous_due, 0.00) as previous_due from tbl_customer where Customer_SlNo = '$data->customerId'")->row();
-        
+
         $payments = $this->db->query("
             select 
                 'a' as sequence,
@@ -815,19 +858,19 @@ class Customer extends CI_Controller
 
         $previousBalance = $previousDueQuery->previous_due;
 
-        foreach($payments as $key=>$payment){
+        foreach ($payments as $key => $payment) {
             $lastBalance = $key == 0 ? $previousDueQuery->previous_due : $payments[$key - 1]->balance;
             $payment->balance = ($lastBalance + $payment->bill + $payment->paid_out) - ($payment->paid + $payment->returned + $payment->discount);
         }
 
-        if((isset($data->dateFrom) && $data->dateFrom != null) && (isset($data->dateTo) && $data->dateTo != null)){
-            $previousPayments = array_filter($payments, function($payment) use ($data){
+        if ((isset($data->dateFrom) && $data->dateFrom != null) && (isset($data->dateTo) && $data->dateTo != null)) {
+            $previousPayments = array_filter($payments, function ($payment) use ($data) {
                 return $payment->date < $data->dateFrom;
             });
 
             $previousBalance = count($previousPayments) > 0 ? $previousPayments[count($previousPayments) - 1]->balance : $previousBalance;
 
-            $payments = array_filter($payments, function($payment) use ($data){
+            $payments = array_filter($payments, function ($payment) use ($data) {
                 return $payment->date >= $data->dateFrom && $payment->date <= $data->dateTo;
             });
 
@@ -841,28 +884,27 @@ class Customer extends CI_Controller
 
     function search_customer_payments()
     {
-        $dAta['searchtype']= $searchtype = $this->input->post('searchtype');
-        $dAta['startdate']=$startdate = $this->input->post('startdate');
-        $dAta['enddate']=$enddate = $this->input->post('enddate');
-        $dAta['customerID']=$customerID = $this->input->post('customerID');
+        $dAta['searchtype'] = $searchtype = $this->input->post('searchtype');
+        $dAta['startdate'] = $startdate = $this->input->post('startdate');
+        $dAta['enddate'] = $enddate = $this->input->post('enddate');
+        $dAta['customerID'] = $customerID = $this->input->post('customerID');
         $this->session->set_userdata($dAta);
-		//echo "<pre>";print_r($dAta);exit;
-		$BRANCHid = $this->session->userdata("BRANCHid");
-        if($searchtype == "All"){
+        //echo "<pre>";print_r($dAta);exit;
+        $BRANCHid = $this->session->userdata("BRANCHid");
+        if ($searchtype == "All") {
             $sql = "SELECT tbl_customer_payment.*, tbl_customer.* 
                     FROM tbl_customer_payment 
                     left join tbl_customer on tbl_customer.Customer_SlNo = tbl_customer_payment.CPayment_customerID 
                     where tbl_customer.Customer_brunchid='$BRANCHid' 
                     AND tbl_customer_payment.CPayment_date between '$startdate' and '$enddate'";
-			$result = $this->db->query($sql);
-        }
-        else if($searchtype == "Customer"){
+            $result = $this->db->query($sql);
+        } else if ($searchtype == "Customer") {
 
-        	$this->db->select('tbl_customer_payment.*, tbl_customer.*');
-        	$this->db->from('tbl_customer_payment');
-        	$this->db->join('tbl_customer', 'tbl_customer_payment.CPayment_customerID = tbl_customer.Customer_SlNo', 'left');
-        	$this->db->where('tbl_customer_payment.CPayment_customerID',$customerID);
-        	$this->db->where('tbl_customer_payment.CPayment_date >=', $startdate)->where('tbl_customer_payment.CPayment_date <=', $enddate);
+            $this->db->select('tbl_customer_payment.*, tbl_customer.*');
+            $this->db->from('tbl_customer_payment');
+            $this->db->join('tbl_customer', 'tbl_customer_payment.CPayment_customerID = tbl_customer.Customer_SlNo', 'left');
+            $this->db->where('tbl_customer_payment.CPayment_customerID', $customerID);
+            $this->db->where('tbl_customer_payment.CPayment_date >=', $startdate)->where('tbl_customer_payment.CPayment_date <=', $enddate);
             $this->db->group_by('tbl_customer_payment.CPayment_invoice');
             $this->db->order_by('tbl_customer_payment.CPayment_date');
             $result = $this->db->get();
@@ -893,7 +935,7 @@ class Customer extends CI_Controller
         $datas["record"] = $result->result();
         $datas["recordss"] = $result->row();
         $datas["due"] = $dueResult->row();
-		//echo "<pre>";print_r($datas["record"]);exit;
+        //echo "<pre>";print_r($datas["record"]);exit;
         $this->load->view('Administrator/payment_reports/customer_payment_report_list', $datas);
     }
 
@@ -939,9 +981,10 @@ class Customer extends CI_Controller
         $this->load->view('Administrator/ajax/search_customer', $data);
     }
 
-    public function customerPaymentHistory(){
+    public function customerPaymentHistory()
+    {
         $access = $this->mt->userAccess();
-        if(!$access){
+        if (!$access) {
             redirect(base_url());
         }
         $data['title'] = "Customer Payment History";
@@ -949,9 +992,10 @@ class Customer extends CI_Controller
         $this->load->view('Administrator/index', $data);
     }
 
-    public function installmentCollection() {
+    public function installmentCollection()
+    {
         $access = $this->mt->userAccess();
-        if(!$access){
+        if (!$access) {
             redirect(base_url());
         }
         $data['title'] = "Installment Collection";
@@ -959,9 +1003,10 @@ class Customer extends CI_Controller
         $this->load->view('Administrator/index', $data);
     }
 
-    public function dueRemainder(){
+    public function dueRemainder()
+    {
         $access = $this->mt->userAccess();
-        if(!$access){
+        if (!$access) {
             redirect(base_url());
         }
         $data['title'] = "Customer Due Remainder";
@@ -969,14 +1014,15 @@ class Customer extends CI_Controller
         $this->load->view('Administrator/index', $data);
     }
 
-    public function getDueRemainder() {
+    public function getDueRemainder()
+    {
         $data = json_decode($this->input->raw_input_stream);
         $clauses = '';
-        
-        if(isset($data->customer_id) && $data->customer_id != ''){
+
+        if (isset($data->customer_id) && $data->customer_id != '') {
             $clauses .= " and cp.CPayment_customerID = '$data->customer_id'";
         }
-        $branchId= $this->session->userdata("BRANCHid");
+        $branchId = $this->session->userdata("BRANCHid");
         $customers = $this->db->query("
             SELECT * FROM (
                 SELECT 
@@ -1007,14 +1053,15 @@ class Customer extends CI_Controller
             ) as tbl
             where due > 0
         ")->result();
-        
-        $customers = array_map(function($customer){
+
+        $customers = array_map(function ($customer) {
             $customer->reasons = $this->db->query(
                 "SELECT * 
                 from tbl_reason 
                 where payment_id = $customer->CPayment_id
                 order by id desc
-            ")->result();
+            "
+            )->result();
             return $customer;
         }, $customers);
 
@@ -1025,8 +1072,8 @@ class Customer extends CI_Controller
 
     function dueRemainderUpdate()
     {
-        $res = ['success'=>false, 'message'=>''];
-        try{
+        $res = ['success' => false, 'message' => ''];
+        try {
             $data = json_decode($this->input->raw_input_stream);
             $customerObj = $data->customer;
             $payment['CPayment_date'] = $customerObj->payment_date;
@@ -1042,11 +1089,10 @@ class Customer extends CI_Controller
                 'payment_id' => $customerObj->payment_id,
                 'created_at' => date("Y-m-d H:i:s"),
             ]);
-    
-            $res = ['success'=>true, 'message'=>'Due Remainder Date Updated'];
 
-        } catch (Exception $ex){
-            $res = ['success'=>false, 'message'=>$ex->getMessage()];
+            $res = ['success' => true, 'message' => 'Due Remainder Date Updated'];
+        } catch (Exception $ex) {
+            $res = ['success' => false, 'message' => $ex->getMessage()];
         }
 
         echo json_encode($res);
@@ -1055,12 +1101,11 @@ class Customer extends CI_Controller
     public function customer_payment_discount()
     {
         $access = $this->mt->userAccess();
-        if(!$access){
+        if (!$access) {
             redirect(base_url());
         }
         $data['title'] = "Customer Payment Discount";
         $data['content'] = $this->load->view('Administrator/reports/customer_payment_discount', $data, TRUE);
         $this->load->view('Administrator/index', $data);
     }
-
 }

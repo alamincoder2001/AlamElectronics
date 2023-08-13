@@ -22,7 +22,7 @@
 <div id="transferInvoice">
     <div class="row">
         <div class="col-xs-12">
-            <a href="" id="printIcon"><i class="fa fa-print"></i> Print</a>
+            <a href="" onclick="trasnferPrint(event)"><i class="fa fa-print"></i> Print</a>
         </div>
     </div>
     <div class="row">
@@ -83,9 +83,11 @@
 </div>
 
 <script>
-    $('#printIcon').on('click', function(e) {
+    async function trasnferPrint(event){
+        event.preventDefault();
+        
         let invoiceContent = document.querySelector('#invoiceContent').innerHTML;
-        let printWindow = window.open('', 'PRINT', 'width=400,height=500');
+        let printWindow = window.open('', '', `width=${screen.width},height=${screen.height}`);
         printWindow.document.write(`
             <html>
                 <head>
@@ -128,5 +130,9 @@
         printWindow.document.head.innerHTML += invoiceStyle;
 
         printWindow.focus();
-    })
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        printWindow.print();
+        printWindow.close();
+
+    }
 </script>

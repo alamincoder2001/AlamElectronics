@@ -122,7 +122,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="sale in sales">
+						<tr style="color:white;" v-for="sale in sales" :style="{color: sale.total_due > 0 ? 'red' : 'green'}">
 							<td>{{sale.customer}}</td>
 							<td>{{ sale.SaleMaster_SaleDate }}</td>
 							<td>{{ sale.SaleMaster_InvoiceNo }}</td>

@@ -41,16 +41,19 @@ const Invoice = Vue.component('collection-invoice', {
                                 <tr>
                                     <td>Sl.</td>
                                     <td>Description</td>
-                                    <td>Qnty</td>
-                                    <td>Total</td>
+                                    <td>Sale Date</td>
+                                    <td align="center">Payment</td>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>{{ 1 }}</td>
-                                    <td>{{ installment.CPayment_notes }}</td>
-                                    <td>{{ 1 }}</td>
-                                    <td align="right">{{ installment.CPayment_amount }}</td>
+                                <tr v-for="(item, ind) in cart" :key="ind">
+                                    <td>{{ ind + 1 }}</td>
+                                    <td>
+                                        {{item.Product_Code}}-{{item.Product_Name}} <br>
+                                        ({{item.ps_serial_number}})
+                                    </td>
+                                    <td>{{ item.SaleMaster_SaleDate }}</td>
+                                    <td align="center">{{ installment.CPayment_amount }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -118,8 +121,8 @@ const Invoice = Vue.component('collection-invoice', {
                 <div class="row" style="margin-top:20px;">
                     <div class="col-xs-12">
                         <strong>In Word: </strong> Taka {{ convertNumberToWords(installment.CPayment_amount) }}<br><br>
-                        <!--  <strong>Note: </strong>
-                        <p style="white-space: pre-line">{{ installment.CPayment_notes }}</p>-->
+                        <strong>Note: </strong>
+                        <p style="white-space: pre-line">{{ installment.CPayment_notes }}</p>
                     </div>
                 </div>
             </div>
@@ -169,16 +172,12 @@ const Invoice = Vue.component('collection-invoice', {
     },
     methods: {
         getSales() {
-            // console.log(this.collection_id);
             axios.post('/get_collection', { collectionId: this.collection_id }).then(res => {
-                console.log(res.data);
                 this.totalTaka = res.data.TotalTaka;
                 this.totalPaid = res.data.Totalpaid;
                 this.customer = res.data.customer;
                 this.installment = res.data.installment;
-
-                //     this.sales = res.data.sales[0];
-                //     this.cart = res.data.saleDetails;
+                this.cart = res.data.saleDetails;
             })
         },
         getCurrentBranch() {

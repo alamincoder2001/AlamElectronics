@@ -301,6 +301,7 @@ class Products extends CI_Controller {
                     join tbl_transfermaster tm on tm.transfer_id = trd.transfer_id
                     where trd.product_id = p.Product_SlNo
                     and tm.transfer_from = '$branchId'
+                    and tm.Status = 'a'
                     " . (isset($data->date) && $data->date != null ? " and tm.transfer_date <= '$data->date'" : "") . "
                 ) as transferred_from_quantity,
 
@@ -309,6 +310,7 @@ class Products extends CI_Controller {
                     join tbl_transfermaster tm on tm.transfer_id = trd.transfer_id
                     where trd.product_id = p.Product_SlNo
                     and tm.transfer_to = '$branchId'
+                    and tm.Status = 'a'
                     " . (isset($data->date) && $data->date != null ? " and tm.transfer_date <= '$data->date'" : "") . "
                 ) as transferred_to_quantity,
                         

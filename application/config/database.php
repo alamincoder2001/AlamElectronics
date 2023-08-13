@@ -8,13 +8,13 @@ $db['default'] = array(
 	'dsn'	=> '',
 	'hostname' => 'localhost',
 	
-//   	'username' => 'root',
-//   	'password' => '',
-//   	'database' => 'alam_electronics',
+  	'username' => 'root',
+  	'password' => '',
+  	'database' => 'dewbxcak_alam_electronics',
 	
-	'username' => 'dewbxcak_alam_electronics',
-	'password' => 'Ui7k89-Oa5J4',
-	'database' => 'dewbxcak_alam_electronics',
+	// 'username' => 'dewbxcak_alam_electronics',
+	// 'password' => 'Ui7k89-Oa5J4',
+	// 'database' => 'dewbxcak_alam_electronics',
 		
 
 	'dbdriver' => 'mysqli',

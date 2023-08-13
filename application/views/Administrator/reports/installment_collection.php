@@ -144,7 +144,7 @@
 		</div>
 	</div>
 
-	<!-- <div class="row">
+<!-- <div class="row">
 		<div class="col-sm-12 form-inline">
 			<div class="form-group">
 				<label for="filter" class="sr-only">Filter</label>
@@ -294,6 +294,11 @@
 					return;
 				}
 
+				if(parseFloat(this.payment.due) < parseFloat(this.payment.paid)){
+            		alert('Payment amount must not more than due.');
+					return;
+				}
+
 				let deleteConfirm = confirm('Are you sure?');
 				if(deleteConfirm == false){
 					return;
@@ -307,7 +312,6 @@
 
 				axios.post('/update_installment_payment', this.payment).then(async res => {
 					let r = res.data;
-					// alert(r.message);
 
 					if(r.success){
 						this.resetForm();
