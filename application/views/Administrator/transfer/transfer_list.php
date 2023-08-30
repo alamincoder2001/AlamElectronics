@@ -47,6 +47,13 @@
                 </div>
 
                 <div class="form-group">
+                    <select id="searchDetails" v-model="filter.searchBy" class="form-control no-padding">
+                        <option value="without">Without Details</option>
+                        <option value="with">With Details</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label>Date from</label>
                     <input type="date" class="form-control" v-model="filter.dateFrom">
                 </div>
@@ -66,7 +73,7 @@
     <div class="row" style="margin-top: 15px;">
         <div class="col-md-12">
             <div class="table-responsive">
-                <table class="table table-bordered">
+                <table v-if="filter.searchBy == 'without'" class="table table-bordered" style="display: none;" :style="{display: filter.searchBy == 'without' ? '' : 'none'}">
                     <thead>
                         <tr>
                             <th>Sl</th>
@@ -96,6 +103,63 @@
                         </tr>
                     </tbody>
                 </table>
+                <table v-else class="table table-bordered" style="display: none;" :style="{display: filter.searchBy == 'with' ? '' : 'none'}">
+                    <thead>
+                        <tr>
+                            <th>Sl</th>
+                            <th>Transfer Date</th>
+                            <th>Transfer by</th>
+                            <th>Transfer To</th>
+                            <th>Product Code</th>
+                            <th>Product Name</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template v-for="(transfer, sl) in transfers">
+                            <tr>
+                                <td>{{ sl + 1 }}</td>
+                                <td>{{ transfer.transfer_date }}</td>
+                                <td>{{ transfer.transfer_by_name }}</td>
+                                <td>{{ transfer.transfer_to_name }}</td>
+                                <td>{{ transfer.transferDetails[0].Product_Code }}</td>
+                                <td>{{ transfer.transferDetails[0].Product_Name }}</td>
+                                <td>{{ transfer.transferDetails[0].purchase_rate }}</td>
+                                <td>{{ transfer.transferDetails[0].quantity }}</td>
+                                <td style="text-align:right;">{{ transfer.transferDetails[0].total }}</td>
+                                <td>
+                                    <a href="" v-bind:href="`/transfer_invoice/${transfer.transfer_id}`" target="_blank" title="View invoice"><i class="fa fa-file"></i></a>
+                                    <?php if ($this->session->userdata('accountType') != 'u') { ?>
+                                        <a v-if="transfer.Status == 'p'" href="" @click.prevent="editCheck(transfer)" title="Edit"><i class="fa fa-edit"></i></a>
+                                        <a v-if="transfer.Status == 'p'" href="" @click.prevent="deleteTransfer(transfer)" title="Delete"><i class="fa fa-trash"></i></a>
+                                    <?php } ?>
+                                </td>
+                            </tr>
+                            <tr v-for="(product, sl) in transfer.transferDetails.slice(1)">
+                                <td colspan="4" v-bind:rowspan="transfer.transferDetails.length - 1" v-if="sl == 0"></td>
+                                <td>{{ product.Product_Code }}</td>
+                                <td>{{ product.Product_Name }}</td>
+                                <td style="text-align:center;">{{ product.purchase_rate }}</td>
+                                <td style="text-align:center;">{{ product.quantity }}</td>
+                                <td style="text-align:right;">{{ product.total }}</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th style="text-align: left;" colspan="8">
+                                    Note: {{transfer.note}}
+                                </th>
+                                <th style="text-align: right;">
+                                    Quantity: {{ transfer.transferDetails.reduce((acc, pre) => {return acc + +parseFloat(pre.quantity)},0) }} <br>
+                                    Price: {{ transfer.transferDetails.reduce((acc, pre) => {return acc + +parseFloat(pre.total)},0).toFixed(2) }}
+                                </th>
+                                <th></th>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -113,6 +177,7 @@
         data() {
             return {
                 filter: {
+                    searchBy: 'without',
                     branch: null,
                     dateFrom: moment().format('YYYY-MM-DD'),
                     dateTo: moment().format('YYYY-MM-DD')

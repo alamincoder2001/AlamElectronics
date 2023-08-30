@@ -132,7 +132,7 @@
                                     </div>
                                     <div class="form-group">
                                         <div class="col-md-8 col-md-offset-4">
-                                            <input type="submit" class="btn btn-default pull-right btn-xs" value="Add to Cart">
+                                            <input type="submit" :disabled="inProgress" class="btn btn-default pull-right btn-xs" value="Add to Cart">
                                         </div>
                                     </div>
                                 </form>
@@ -320,6 +320,8 @@
 					return;
 				}
 
+                this.inProgress = true;
+
                 let product = {}
 				if(this.serials.length) {
 					product = {
@@ -387,6 +389,8 @@
                 this.total = '';
                 let productSearchBox = document.querySelector('#product input[role="combobox"]');
                 productSearchBox.focus();
+
+                this.inProgress = false;
             },
 
             async onChangeCartQuantity(productId){

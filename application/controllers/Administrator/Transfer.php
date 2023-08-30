@@ -330,6 +330,20 @@ class Transfer extends CI_Controller
                 where tm.transfer_from = ? $clauses
             ", $this->session->userdata('BRANCHid'))->result();
 
+        if (isset($data->searchBy) && $data->searchBy == 'with') {
+            foreach ($transfers as $key => $item) {
+                $item->transferDetails = $this->db->query("SELECT
+                                                    td.*,
+                                                    p.Product_Name,
+                                                    p.Product_Code,
+                                                    p.Product_Purchase_Rate,
+                                                    p.Product_SellingPrice
+                                                FROM tbl_transferdetails td
+                                                LEFT JOIN tbl_product p ON p.Product_SlNo = td.product_id
+                                                WHERE td.transfer_id = ?", $item->transfer_id)->result();
+            }
+        }
+
         echo json_encode($transfers);
     }
 

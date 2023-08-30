@@ -65,14 +65,21 @@
                                     <td style="text-align:right;"><?php echo $key + 1; ?></td>
                                     <td><?php echo $product->ProductCategory_Name; ?></td>
                                     <td><?php echo $product->Product_Code; ?></td>
-                                    <td><?php echo $product->Product_Name; ?></td>
+                                    <td>
+                                        <?php echo $product->Product_Name; ?>
+                                        <span>(
+                                            <?php foreach ($product->serial as $key => $item) { ?>
+                                                <?= $item->ps_serial_number . ', '; ?>
+                                            <?php } ?>
+                                        )</span>
+                                    </td>
                                     <td style="text-align:right;"><?php echo $product->quantity; ?></td>
                                     <td style="text-align:right;"><?php echo $product->total; ?></td>
                                 </tr>
                             <?php }; ?>
                             <tr>
                                 <td colspan="5" style="text-align:right;">Total</td>
-                                <td style="text-align:right;"><?php echo $transfer->total_amount;?></td>
+                                <td style="text-align:right;"><?php echo $transfer->total_amount; ?></td>
                             </tr>
                         </tbody>
                     </table>
@@ -83,9 +90,9 @@
 </div>
 
 <script>
-    async function trasnferPrint(event){
+    async function trasnferPrint(event) {
         event.preventDefault();
-        
+
         let invoiceContent = document.querySelector('#invoiceContent').innerHTML;
         let printWindow = window.open('', '', `width=${screen.width},height=${screen.height}`);
         printWindow.document.write(`
