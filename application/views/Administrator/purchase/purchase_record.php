@@ -383,11 +383,6 @@
 						this.purchases = res.data.purchases;
 					}
 				})
-				.catch(error => {
-					if(error.response){
-						alert(`${error.response.status}, ${error.response.statusText}`);
-					}
-				})
 			},
 			getPurchaseDetails(){
 				let filter = {
@@ -401,11 +396,6 @@
 				.then(res => {
 					this.purchases = res.data;
 				})
-				.catch(error => {
-					if(error.response){
-						alert(`${error.response.status}, ${error.response.statusText}`);
-					}
-				})
 			},
 			deletePurchase(purchaseId){
 				let deleteConf = confirm('Are you sure?');
@@ -418,11 +408,6 @@
 					alert(r.message);
 					if(r.success){
 						this.getPurchaseRecord();
-					}
-				})
-				.catch(error => {
-					if(error.response){
-						alert(`${error.response.status}, ${error.response.statusText}`);
 					}
 				})
 			},

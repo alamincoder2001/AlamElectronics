@@ -536,11 +536,6 @@
 						}
 						this.sales = sales;
 					})
-					.catch(error => {
-						if (error.response) {
-							alert(`${error.response.status}, ${error.response.statusText}`);
-						}
-					})
 			},
 			deleteSale(saleId) {
 				let deleteConf = confirm('Are you sure?');
@@ -555,11 +550,6 @@
 						alert(r.message);
 						if (r.success) {
 							this.getSalesRecord();
-						}
-					})
-					.catch(error => {
-						if (error.response) {
-							alert(`${error.response.status}, ${error.response.statusText}`);
 						}
 					})
 			},

@@ -102,12 +102,12 @@
 			<button style="float: right;" id="btnExport" onclick="fnExcelReport();"> EXPORT </button>
 		</div>
 		<div class="col-md-12">
-			<div class="table-responsive" id="reportContent">
+			<div class="table-responsive" id="reportContent" style="max-height:380px;overflow-y:scroll;">
 				<table 
 					id="headerTable"
 					class="record-table"
 					>
-					<thead>
+					<thead style="position: sticky;top:0;">
 						<tr>
 							<th>Customer</th>
 							<th>Invoice Date</th>

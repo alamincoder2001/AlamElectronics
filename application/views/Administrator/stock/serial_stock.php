@@ -201,7 +201,7 @@ margin-top: 30px !important;
 
 						<tr>
 							<th style="text-align: right;" colspan="6">Total=</th>
-							<th>{{ stock.reduce((prev, curr)=> {return prev + curr.purchase_rate}, 0) | decimal }}</th>
+							<th>{{ stock.reduce((prev, curr)=> {return prev + +parseFloat(curr.purchase_total)}, 0) | decimal }}</th>
 						</tr>
 					</tbody>
 					

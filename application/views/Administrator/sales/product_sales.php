@@ -867,7 +867,6 @@
 					alert('Installment amount filed is required');
 					return;
 				}
-				this.saleOnProgress = true;
 
 				await this.getCustomerDue();
 
@@ -899,6 +898,8 @@
 				if(this.selectedCustomer.Customer_Type == 'G'){
 					data.customer = this.selectedCustomer;
 				}
+				this.saleOnProgress = true;
+				
 				axios.post(url, data).then(async res=> {
 					let r = res.data;
 					if(r.success){
