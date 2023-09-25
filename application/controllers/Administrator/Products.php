@@ -387,7 +387,15 @@ class Products extends CI_Controller {
             AND sl.ps_p_r_status <> 'yes' AND (sl.ps_s_status IS NULL OR sl.ps_s_status <> 'yes'  OR sl.ps_s_r_status ='yes')
             $clauses
             ", $this->session->userdata("BRANCHid"))->result();
-        echo json_encode($serials);
+
+        foreach ($serials as $key => $item) {
+            $check = $this->db->query("SELECT * FROM `tbl_transfer_productserial` WHERE `ps_id` = ?", $item->ps_id)->row();
+            if (!empty($check)) {
+                unset($serials[$key]);
+            }
+        }   
+        
+        echo json_encode(array_values($serials));
     }
 
     public function fanceybox_category()  {

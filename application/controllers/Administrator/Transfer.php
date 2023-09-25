@@ -363,7 +363,7 @@ class Transfer extends CI_Controller
             ", $data->transferId)->result();
 
         $transferDetails = array_map(function ($saleDetail) {
-            $saleDetail->serial = $this->db->query("SELECT * FROM tbl_product_serial_numbers WHERE transfer_details_id=?", $saleDetail->transferdetails_id)->result();
+            $saleDetail->serial = $this->db->query("SELECT * FROM tbl_transferserial_history WHERE transferdetails_id=?", $saleDetail->transferdetails_id)->result();
             return $saleDetail;
         }, $transferDetails);
 
@@ -439,10 +439,17 @@ class Transfer extends CI_Controller
                 where td.transfer_id = ?
             ", $transferId)->result();
 
-        $data['transferDetails'] = array_map(function ($saleDetail) {
-            $saleDetail->serial = $this->db->query("SELECT * FROM tbl_product_serial_numbers WHERE transfer_details_id=?", $saleDetail->transferdetails_id)->result();
-            return $saleDetail;
-        }, $transferDetails);
+        if ($data['transfer']->Status == 'p') {
+            $data['transferDetails'] = array_map(function ($saleDetail) {
+                $saleDetail->serial = $this->db->query("SELECT * FROM tbl_transfer_productserial WHERE transferdetail_id=?", $saleDetail->transferdetails_id)->result();
+                return $saleDetail;
+            }, $transferDetails);
+        }else{
+            $data['transferDetails'] = array_map(function ($saleDetail) {
+                $saleDetail->serial = $this->db->query("SELECT * FROM tbl_transferserial_history WHERE transferdetails_id=?", $saleDetail->transferdetails_id)->result();
+                return $saleDetail;
+            }, $transferDetails);
+        }
 
         $data['content'] = $this->load->view('Administrator/transfer/transfer_invoice', $data, true);
         $this->load->view('Administrator/index', $data);
