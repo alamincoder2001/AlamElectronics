@@ -696,7 +696,6 @@ class Sales extends CI_Controller
         $clauses = "";
         if (isset($data->month) && $data->month != '') {
             list($year, $month) = explode("-", $data->month);
-
             $clauses .= " and MONTH(sm.SaleMaster_SaleDate) = '$month' and YEAR(sm.SaleMaster_SaleDate) = '$year'";
         }
 

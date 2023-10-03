@@ -298,19 +298,19 @@
 				axios.post(url, filter)
 				.then(res => {
 					this.sales = res.data;
-					this.sales.forEach((value)=>{
-						if(parseInt(value.installment_month) > this.installment_month){
-							this.installment_month = parseInt(value.installment_month);
-						}
-					});
+					// this.sales.forEach((value)=>{
+					// 	if(parseInt(value.installment_month) > this.installment_month){
+					// 		this.installment_month = parseInt(value.installment_month);
+					// 	}
+					// });
+					const monthDifference =  moment(new Date(moment().format('YYYY-MM-DD'))).diff(new Date(moment(this.month).format('YYYY-MM-DD')), 'months', true);
 
 					//get month name
 					this.months = [];
-					let dates = [moment(this.month).add(1, 'months').format('YYYY-MM-DD'), moment(this.month).add(this.installment_month, 'months').format('YYYY-MM-DD')];
+					let dates = [moment(this.month).add(1, 'months').format('YYYY-MM-DD'), moment(this.month).add(monthDifference, 'months').format('YYYY-MM-DD')];
 
 					let diff = dates.map(function(i){
-						let m = moment(i);
-						
+						let m = moment(i);						
 						return {
 						month : m.month(),
 						year : m.year()
@@ -332,15 +332,9 @@
 						}
 						this.months.push(this.monthNames[start.month]+", "+start.year)
 					}
-					console.log(this.months);
-					//end month name
-					this.installment_month = 0;
 
-				})
-				.catch(error => {
-					if(error.response){
-						alert(`${error.response.status}, ${error.response.statusText}`);
-					}
+					// this.installment_month = 0;
+
 				})
 			},
 			async print(){
