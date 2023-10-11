@@ -71,17 +71,21 @@
                                             <?php foreach ($product->serial as $key => $item) { ?>
                                                 <?= $item->ps_serial_number . ', '; ?>
                                             <?php } ?>
-                                        )</span>
+                                            )</span>
                                     </td>
-                                    <td style="text-align:right;"><?php echo $product->quantity; ?></td>
+                                    <td style="text-align:center;"><?php echo $product->quantity; ?></td>
                                     <td style="text-align:right;"><?php echo $product->total; ?></td>
                                 </tr>
                             <?php }; ?>
+
+                        </tbody>
+                        <tfoot>
                             <tr>
-                                <td colspan="5" style="text-align:right;">Total</td>
+                                <td colspan="4" style="text-align:right;">Total</td>
+                                <td style="text-align:center;"><?php echo array_sum(array_column($transferDetails, 'quantity')) ?></td>
                                 <td style="text-align:right;"><?php echo $transfer->total_amount; ?></td>
                             </tr>
-                        </tbody>
+                        </tfoot>
                     </table>
                 </div>
             </div>

@@ -43,7 +43,7 @@ const purchaseInvoice = Vue.component("purchase-invoice", {
                                     <td>Color</td>
                                     <td>Qnty</td>
                                     <td>Unit Price</td>
-                                    <td>Total</td>
+                                    <td align="right">Total</td>
                                 </tr>
                             </thead>
                             <tbody>
@@ -61,6 +61,14 @@ const purchaseInvoice = Vue.component("purchase-invoice", {
                                     <td align="right">{{ product.PurchaseDetails_TotalAmount }}</td>
                                 </tr>
                             </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3">Total</td>
+                                    <td>{{cart.reduce((acc,pre)=>{return acc + +parseFloat(pre.PurchaseDetails_TotalQuantity)},0)}}</td>
+                                    <td></td>
+                                    <td align="right">{{cart.reduce((acc,pre)=>{return acc + +parseFloat(pre.PurchaseDetails_TotalAmount)},0).toFixed(2)}}</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
